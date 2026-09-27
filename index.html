@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StallFest | Stall & Rating</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:18px 22px;position:sticky;top:0;z-index:5;box-shadow:0 3px 12px #0002}
+.nav{max-width:1050px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:23px;font-weight:800}.nav button{background:#ffffff22;color:white;border:1px solid #ffffff55}
+.container{max-width:1050px;margin:25px auto;padding:0 16px}
+.hero{background:white;border-radius:22px;padding:28px;text-align:center;box-shadow:0 5px 20px #0000000d;margin-bottom:22px}
+.hero h1{margin:0 0 8px;font-size:32px}.hero p{color:#667085}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-top:22px}
+button{border:0;border-radius:12px;padding:13px 17px;font-weight:700;cursor:pointer;font-size:15px}
+.primary{background:#4f46e5;color:white}.secondary{background:#eef2ff;color:#4338ca}.green{background:#16a34a;color:#fff}.danger{background:#fee2e2;color:#b91c1c}
+.card{background:#fff;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 4px 16px #0000000c}
+h2{margin-top:0}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.field{margin-bottom:14px}.field label{display:block;font-weight:700;margin-bottom:7px}
+input,select{width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:10px;font-size:15px;background:#fff}
+.qrbox{border:2px dashed #c7d2fe;padding:15px;border-radius:14px;text-align:center;background:#f8faff}
+.qrbox img{max-width:210px;max-height:210px;margin:10px auto;display:block}
+.amount{font-size:24px;font-weight:800;color:#16a34a}
+.stalls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.stall{border:1px solid #e5e7eb;border-radius:16px;padding:18px;background:#fff}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#eef2ff;color:#4338ca;font-size:12px;font-weight:700}
+.stars{color:#f59e0b;font-size:23px;letter-spacing:2px}.ratingNum{font-size:30px;font-weight:800}
+.hidden{display:none}.muted{color:#667085}.success{background:#ecfdf3;color:#027a48;padding:12px;border-radius:10px;margin:10px 0}
+.error{background:#fef3f2;color:#b42318;padding:12px;border-radius:10px;margin:10px 0}
+.back{margin-bottom:15px}
+.small{font-size:13px}.center{text-align:center}
+@media(max-width:700px){.actions,.grid,.stalls{grid-template-columns:1fr}.hero h1{font-size:25px}.nav{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="logo">🏪 StallFest</div>
+    <button onclick="showPage('ratings')">⭐ View Rating</button>
+  </div>
+</header>
+
+<main class="container">
+  <section id="home" class="page">
+    <div class="hero">
+      <h1>Stall Registration & Rating</h1>
+      <p>Create your stall, complete the ₹100 registration process, and collect customer ratings.</p>
+      <div class="actions">
+        <button class="primary" onclick="showPage('create')">➕ Create Stall</button>
+        <button class="secondary" onclick="showPage('giveRating')">⭐ Give Rating</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Live Stall Ratings</h2>
+      <div id="homeRatings"></div>
+    </div>
+  </section>
+
+  <section id="create" class="page hidden">
+    <button class="secondary back" onclick="showPage('home')">← Back</button>
+    <div class="card">
+      <h2>Create Stall</h2>
+      <p class="muted">Maximum 3 students are allowed for one stall.</p>
+
+      <div class="field">
+        <label>Number of Students</label>
+        <select id="studentCount" onchange="studentFields()">
+          <option value="1">1 Student</option><option value="2">2 Students</option><option value="3">3 Students</option>
+        </select>
+      </div>
+      <div id="students"></div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Stall Name</label>
+          <input id="stallName" placeholder="Enter stall name">
+        </div>
+        <div class="field">
+          <label>Stall Category</label>
+          <select id="category">
+            <option value="">Select category</option>
+            <option>Technical</option><option>Non-Technical</option><option>Food</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px;background:#f8fafc">
+        <h3>Google Pay Registration</h3>
+        <div class="qrbox">
+          <div class="amount">₹100</div>
+          <p class="small">Scan the QR code below and complete the payment.</p>
+          <img id="qrPreview" class="hidden" alt="Payment QR">
+          <div id="qrPlaceholder" class="muted">QR code will appear here</div>
+          <div class="field" style="margin-top:12px">
+            <label>Upload your Google Pay QR image</label>
+            <input type="file" id="qrInput" accept="image/*" onchange="previewQR(event)">
+          </div>
+        </div>
+        <br>
+        <label><input type="checkbox" id="paymentDone" style="width:auto"> I have completed the ₹100 payment</label>
+      </div>
+
+      <button class="green" onclick="createStall()">Create Stall</button>
+      <div id="createMsg"></div>
+    </div>
+  </section>
+
+  <section id="giveRating" class="page hidden">
+    <button class="secondary back" onclick="showPage('home')">← Back</button>
+    <div class="card">
+      <h2>Give Rating</h2>
+      <p class="muted">Select a stall. One Customer ID can rate the same stall only once.</p>
+      <div id="ratingStalls" class="stalls"></div>
+    </div>
+  </section>
+
+  <section id="rateForm" class="page hidden">
+    <button class="secondary back" onclick="showPage('giveRating')">← Back</button>
+    <div class="card">
+      <h2 id="rateStallTitle"></h2>
+      <p id="rateCategory" class="badge"></p>
+      <input type="hidden" id="selectedStallId">
+      <div class="field" style="margin-top:18px">
+        <label>Customer Name / ID</label>
+        <input id="customerId" placeholder="Enter your name or ID">
+      </div>
+      <div class="field">
+        <label>Rating</label>
+        <select id="ratingValue">
+          <option value="5">⭐⭐⭐⭐⭐ — 5</option>
+          <option value="4">⭐⭐⭐⭐ — 4</option>
+          <option value="3">⭐⭐⭐ — 3</option>
+          <option value="2">⭐⭐ — 2</option>
+          <option value="1">⭐ — 1</option>
+        </select>
+      </div>
+      <button class="primary" onclick="submitRating()">Submit Rating</button>
+      <div id="ratingMsg"></div>
+    </div>
+  </section>
+
+  <section id="ratings" class="page hidden">
+    <button class="secondary back" onclick="showPage('home')">← Back</button>
+    <div class="card">
+      <h2>⭐ Live Stall Ratings</h2>
+      <p class="muted">Stalls are automatically sorted by highest average rating.</p>
+      <div id="allRatings" class="stalls"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const KEY='stallfest_data_v1';
+
+function data(){return JSON.parse(localStorage.getItem(KEY)||'{"stalls":[],"ratings":[]}')}
+function save(d){localStorage.setItem(KEY,JSON.stringify(d))}
+function showPage(id){
+  document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if(id==='create') studentFields();
+  if(id==='giveRating') renderRatingStalls();
+  if(id==='ratings'||id==='home') renderRatings();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function studentFields(){
+  const n=+document.getElementById('studentCount').value, box=document.getElementById('students');
+  box.innerHTML='';
+  for(let i=1;i<=n;i++) box.innerHTML+=`<div class="field"><label>Student ${i} Name</label><input class="studentName" placeholder="Enter student ${i} name"></div>`;
+}
+function previewQR(e){
+  const f=e.target.files[0]; if(!f)return;
+  const img=document.getElementById('qrPreview'), ph=document.getElementById('qrPlaceholder');
+  img.src=URL.createObjectURL(f);img.classList.remove('hidden');ph.classList.add('hidden');
+}
+function msg(id,text,type='success'){document.getElementById(id).innerHTML=`<div class="${type}">${text}</div>`}
+function createStall(){
+  const names=[...document.querySelectorAll('.studentName')].map(x=>x.value.trim());
+  const stallName=document.getElementById('stallName').value.trim();
+  const category=document.getElementById('category').value;
+  const qr=document.getElementById('qrInput').files[0];
+  const paid=document.getElementById('paymentDone').checked;
+  if(names.some(x=>!x)||!stallName||!category||!qr||!paid){
+    msg('createMsg','Please fill all fields, upload the QR image, and confirm the ₹100 payment.','error');return;
+  }
+  const d=data();
+  d.stalls.push({id:Date.now().toString(),name:stallName,category,students:names,createdAt:new Date().toISOString()});
+  save(d);
+  msg('createMsg','✅ Stall created successfully! It is now available in Give Rating.','success');
+  document.getElementById('stallName').value=''; document.getElementById('qrInput').value='';document.getElementById('paymentDone').checked=false;
+}
+function getStats(stall,d){
+  const rs=d.ratings.filter(r=>r.stallId===stall.id);
+  const avg=rs.length?rs.reduce((a,b)=>a+b.rating,0)/rs.length:0;
+  return {count:rs.length,avg};
+}
+function stallCard(s,d,button=false){
+  const st=getStats(s,d), stars='★★★★★'.split('').map((x,i)=>i<Math.round(st.avg)?'★':'☆').join('');
+  return `<div class="stall">
+    <h3>${esc(s.name)}</h3><span class="badge">${esc(s.category)}</span>
+    <p class="muted">👥 ${s.students.map(esc).join(', ')}</p>
+    <div class="stars">${stars}</div>
+    <span class="ratingNum">${st.avg?st.avg.toFixed(1):'—'}</span> <span class="muted">(${st.count} ratings)</span>
+    ${button?`<br><br><button class="primary" onclick="openRate('${s.id}')">Rate this Stall</button>`:''}
+  </div>`;
+}
+function renderRatingStalls(){
+  const d=data(), box=document.getElementById('ratingStalls');
+  box.innerHTML=d.stalls.length?d.stalls.map(s=>stallCard(s,d,true)).join(''):'<p class="muted">No stalls created yet.</p>';
+}
+function renderRatings(){
+  const d=data(), stalls=[...d.stalls].sort((a,b)=>getStats(b,d).avg-getStats(a,d).avg);
+  const html=stalls.length?stalls.map((s,i)=>`<div><div class="small muted" style="margin:6px 0">#${i+1}</div>${stallCard(s,d)}</div>`).join(''):'<p class="muted">No stalls created yet.</p>';
+  document.getElementById('allRatings').innerHTML=html;
+  document.getElementById('homeRatings').innerHTML=html;
+}
+function openRate(id){
+  const d=data(),s=d.stalls.find(x=>x.id===id); if(!s)return;
+  document.getElementById('selectedStallId').value=id;
+  document.getElementById('rateStallTitle').textContent=s.name;
+  document.getElementById('rateCategory').textContent=s.category;
+  document.getElementById('customerId').value='';
+  document.getElementById('ratingMsg').innerHTML='';
+  showPage('rateForm');
+}
+function submitRating(){
+  const id=document.getElementById('selectedStallId').value, customer=document.getElementById('customerId').value.trim(), rating=+document.getElementById('ratingValue').value;
+  if(!customer){msg('ratingMsg','Please enter your Name or ID.','error');return}
+  const d=data();
+  if(d.ratings.some(r=>r.stallId===id && r.customerId.toLowerCase()===customer.toLowerCase())){
+    msg('ratingMsg','❌ This Customer ID has already rated this stall. Only one rating is allowed.','error');return;
+  }
+  d.ratings.push({stallId:id,customerId:customer,rating,createdAt:new Date().toISOString()});
+  save(d);msg('ratingMsg','✅ Rating submitted successfully!','success');
+  setTimeout(()=>showPage('ratings'),700);
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+studentFields();renderRatings();
+</script>
+</body>
+</html>
